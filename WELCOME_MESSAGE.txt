@@ -1,0 +1,108 @@
+WELCOME_MESSAGE_FOR_NEW_DEV.txt
+════════════════════════════════════════
+Send this via WhatsApp to the new developer.
+Paste as-is. Emojis render on all platforms.
+════════════════════════════════════════
+
+Hey [Name] 👋
+
+Welcome to the Phenex VIP project. I'm Ben, product owner. Happy to have you on board.
+
+Here's everything you need to get started:
+
+⸻
+
+*What we're building*
+
+A Telegram-based VIP membership system for traders. Three parts:
+
+1️⃣ *Backend API* (Node.js + PostgreSQL) – all the logic: customer sync, rule engine, CRM, integrations
+2️⃣ *Admin Dashboard* (React) – full control panel for our team
+3️⃣ *Telegram Mini App* – the onboarding gate every user goes through before joining the VIP group
+
+The data comes from TauroMarkets (our partner broker). They expose a REST API that tells us who's actively trading, what their balances are, and whether they're depositing or withdrawing. Our job is to turn that data into automated actions – reminders, ban/unban, segment assignments, CRM tasks – via a configurable rule engine.
+
+⸻
+
+*Your first step*
+
+I've attached the full onboarding document. Read it top to bottom before touching any code. Everything is in there: architecture, DB schema, all API endpoints, how the rule engine works, how the Tauro API integration works, and the known quirks.
+
+The codebase is already written. Your job in this first phase is to understand it, set it up locally, and complete the test task described at the end of the onboarding doc (Section 12).
+
+⸻
+
+*Test task (Section 12 of the doc)*
+
+Add a "Reactivation Opportunity" rule via the API. No UI work needed. Just:
+- Define the rule (conditions + actions)
+- Run a dry-run
+- Write a short explanation of two things (in the doc)
+
+The test task does NOT need live Tauro credentials. Everything runs locally with dummy data.
+
+⸻
+
+*Technical setup*
+
+You'll need: Node.js 20, PostgreSQL 16, Redis 7 (or Docker).
+
+```
+cd backend
+cp .env.example .env
+npm install
+npm run migrate
+npm run seed
+npm run dev
+```
+
+Default admin login after seed:
+Email: admin@phenex.com
+Pass: admin123
+
+For the admin frontend:
+```
+cd frontend-admin
+npm install
+npm start
+```
+
+The Mini App is a single HTML file – no build step. Just open frontend-miniapp/index.html or serve it with `npx serve`.
+
+⸻
+
+*How we communicate*
+
+- Technical questions → this WhatsApp chat
+- If you're stuck on something for more than 30 minutes → send me a voice note with context, I'll get back same day
+- Don't send me "hey" without a question attached 😄
+- I prefer short, specific updates over long summaries: "X is done, Y blocked because Z, need A from you"
+- You can also send voice notes, that's how we work with the other devs
+
+⸻
+
+*Key contacts for Tauro API questions*
+
+Salim (TauroMarkets, API lead) – also in the group "API integration"
+Bishow B (existing developer on the Phenex bot) – also in that group
+
+If you have API questions, ask Salim directly in that group. Don't guess at undocumented behavior.
+
+⸻
+
+*What I expect in the first week*
+
+Day 1–2: Read the onboarding doc, set up locally, get the backend + admin running
+Day 3–4: Complete the test task (Section 12), send me the dry-run output + your explanations
+Day 5: Short voice note or message: what's clear, what's unclear, what you'd do differently
+
+I don't micromanage. I push back when things are incomplete or wrong. I give detailed feedback.
+
+Looking forward to working with you. Let's build something solid. ⚡
+
+– Ben
+
+⸻
+════════════════════════════════════════
+END OF MESSAGE
+════════════════════════════════════════

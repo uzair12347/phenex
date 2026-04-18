@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Phenex VIP</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:      var(--tg-theme-bg-color, #0a0b0e);
+  --surface: var(--tg-theme-secondary-bg-color, #111318);
+  --text:    var(--tg-theme-text-color, #f0f1f3);
+  --hint:    var(--tg-theme-hint-color, #8b909e);
+  --link:    var(--tg-theme-link-color, #e8ff47);
+  --btn:     var(--tg-theme-button-color, #e8ff47);
+  --btn-text:var(--tg-theme-button-text-color, #000);
+  --accent:  #e8ff47;
+  --red:     #ff4d4d;
+  --green:   #22c55e;
+  --border:  #252830;
+  --radius:  12px;
+  --font:    'Inter', sans-serif;
+  --display: 'Syne', sans-serif;
+  --mono:    'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* ── Layout ── */
+.screen { display: none; flex-direction: column; min-height: 100vh; padding: 24px 20px 40px; max-width: 430px; margin: 0 auto; animation: fadeIn 0.25s ease; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Logo ── */
+.logo-wrap { text-align: center; margin-bottom: 32px; padding-top: 20px; }
+.logo-icon {
+  width: 60px; height: 60px;
+  background: var(--accent);
+  border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 0 32px rgba(232,255,71,0.3);
+}
+.logo-icon svg { color: #000; }
+.logo-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-sub { font-size: 13px; color: var(--hint); margin-top: 4px; }
+
+/* ── Hero status ── */
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.status-icon { font-size: 40px; margin-bottom: 10px; }
+.status-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.status-msg { font-size: 13px; color: var(--hint); line-height: 1.5; }
+
+/* ── Steps indicator ── */
+.steps { display: flex; align-items: center; gap: 6px; margin-bottom: 28px; }
+.step { flex: 1; height: 3px; border-radius: 99px; background: var(--border); transition: background 0.3s; }
+.step.done { background: var(--accent); }
+.step.active { background: var(--accent); opacity: 0.5; }
+
+/* ── Form ── */
+.field { margin-bottom: 16px; }
+label { display: block; font-size: 12px; font-weight: 500; color: var(--hint); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+input, textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+input::placeholder { color: var(--hint); }
+input:focus { border-color: var(--accent); }
+input.error { border-color: var(--red); }
+
+/* ── Buttons ── */
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #000;
+  border: none; border-radius: var(--radius);
+  font-family: var(--font); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary.danger { background: var(--red); color: #fff; }
+.btn-primary.red-border {
+  background: rgba(255,77,77,0.1); color: var(--red);
+  border: 1.5px solid rgba(255,77,77,0.4);
+}
+.btn-secondary {
+  width: 100%; padding: 12px;
+  background: transparent; color: var(--hint);
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; margin-top: 10px;
+  text-align: center;
+}
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 12px; color: var(--hint); }
+.info-value { font-size: 13px; font-weight: 500; font-family: var(--mono); }
+.info-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-red   { background: rgba(255,77,77,0.15);  color: var(--red);   }
+.badge-yellow{ background: rgba(232,255,71,0.15); color: var(--accent);}
+.badge-gray  { background: rgba(139,144,158,0.15);color: var(--hint);  }
+
+/* ── Spinner ── */
+.spinner-wrap { text-align: center; padding: 40px; }
+.spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tips ── */
+.tip {
+  background: rgba(232,255,71,0.06);
+  border: 1px solid rgba(232,255,71,0.2);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--hint);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+.section-sub { font-size: 13px; color: var(--hint); margin-bottom: 24px; line-height: 1.5; }
+
+/* ── Error msg ── */
+.error-msg { color: var(--red); font-size: 12px; margin-top: 4px; }
+.success-msg { color: var(--green); font-size: 12px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ── SCREEN 1: Loading ── -->
+<div class="screen active" id="screen-loading">
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+    <div class="logo-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </div>
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- ── SCREEN 2: Welcome / Register ── -->
+<div class="screen" id="screen-welcome">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </div>
+    <div class="logo-title">Phenex VIP</div>
+    <div class="logo-sub">Exclusiver Zugang zur Trading Community</div>
+  </div>
+
+  <div class="steps">
+    <div class="step done" id="step1"></div>
+    <div class="step active" id="step2"></div>
+    <div class="step" id="step3"></div>
+  </div>
+
+  <div class="section-title">Profil anlegen</div>
+  <div class="section-sub">Gib deine Daten ein, um dich mit deinem Broker-Account zu verbinden.</div>
+
+  <div class="field">
+    <label>Vorname</label>
+    <input type="text" id="inp-first" placeholder="Max" autocomplete="given-name" />
+  </div>
+  <div class="field">
+    <label>Nachname</label>
+    <input type="text" id="inp-last" placeholder="Mustermann" autocomplete="family-name" />
+  </div>
+  <div class="field">
+    <label>E-Mail (bei TauroMarkets registriert)</label>
+    <input type="email" id="inp-email" placeholder="max@example.com" autocomplete="email" />
+  </div>
+  <div class="field">
+    <label>TauroMarkets Kunden-ID</label>
+    <input type="text" id="inp-tauro" placeholder="z.B. 321718" class="mono" inputmode="numeric" />
+    <div style="font-size:11px; color:var(--hint); margin-top:4px;">
+      💡 Deine ID findest du in deinem TauroMarkets-Portal oben rechts.
+    </div>
+  </div>
+
+  <div id="form-error" class="error-msg" style="display:none; margin-bottom:12px;"></div>
+
+  <button class="btn-primary" id="btn-submit-profile" onclick="submitProfile()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    Verifizierungs-E-Mail senden
+  </button>
+</div>
+
+<!-- ── SCREEN 3: Email sent ── -->
+<div class="screen" id="screen-email-sent">
+  <div class="logo-wrap">
+    <div style="font-size:56px; margin-bottom:10px;">📧</div>
+    <div class="logo-title">E-Mail versendet!</div>
+    <div class="logo-sub">Prüfe bitte dein Postfach.</div>
+  </div>
+
+  <div class="steps">
+    <div class="step done"></div>
+    <div class="step done"></div>
+    <div class="step active"></div>
+  </div>
+
+  <div class="status-card">
+    <div class="status-msg" style="font-size:14px; color: var(--text);">
+      Wir haben dir eine Bestätigungs-E-Mail gesendet. Klicke auf den Link in der E-Mail, um deinen Account zu verbinden.
+    </div>
+    <div style="font-size:12px; color:var(--hint); margin-top:12px;">
+      Der Link ist 7 Tage gültig. Nach der Bestätigung wird dein Zugang automatisch geprüft.
+    </div>
+  </div>
+
+  <button class="btn-secondary" onclick="checkStatus()">Ich habe bestätigt – Status prüfen</button>
+  <button class="btn-secondary" onclick="showScreen('screen-welcome')">← Zurück</button>
+</div>
+
+<!-- ── SCREEN 4: VIP Status ── -->
+<div class="screen" id="screen-status">
+  <div class="logo-wrap" style="margin-bottom:20px;">
+    <div class="logo-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </div>
+    <div class="logo-title">Phenex VIP</div>
+  </div>
+
+  <div id="status-content">
+    <div class="spinner-wrap"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ── SCREEN 5: Banned ── -->
+<div class="screen" id="screen-banned">
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 20px 0;">
+    <div style="font-size:60px; margin-bottom:16px;">⛔</div>
+    <div class="section-title" style="color: var(--red);">Zugang gesperrt</div>
+    <div style="font-size:14px; color:var(--hint); margin-top:12px; line-height:1.6; margin-bottom:32px;">
+      Du wurdest aufgrund von Inaktivität oder einem anderen Vergehen gebannt. Keine Panik. Das kann ein Fehler sein. Bitte kontaktiere unseren Support!
+    </div>
+    <button class="btn-primary red-border" onclick="openSupport()">
+      Support kontaktieren
+    </button>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let tg = null;
+let userToken = null;
+let currentUser = null;
+
+// ── Init ──────────────────────────────────────────────────────
+async function init() {
+  try {
+    tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    // Try to restore session
+    userToken = localStorage.getItem('phenex_user_token');
+
+    if (userToken) {
+      // Already has token – check status
+      await checkStatus();
+      return;
+    }
+
+    // Check if coming back from JWT verify (Tauro email callback)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified')) {
+      // Re-init with Telegram to get fresh token
+      await initTelegram();
+      await checkStatus();
+      return;
+    }
+
+    // Fresh start
+    if (tg?.initData) {
+      await initTelegram();
+    } else {
+      // Dev mode without Telegram
+      showScreen('screen-welcome');
+    }
+  } catch (e) {
+    console.error('Init error:', e);
+    showScreen('screen-welcome');
+  }
+}
+
+async function initTelegram() {
+  try {
+    const resp = await fetch(`${API}/api/miniapp/init`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData: tg?.initData || 'dev_mode' }),
+    });
+    const data = await resp.json();
+    if (data.token) {
+      userToken = data.token;
+      localStorage.setItem('phenex_user_token', userToken);
+      currentUser = data.user;
+
+      if (data.user.is_banned) {
+        showScreen('screen-banned'); return;
+      }
+      if (data.user.status === 'registered' || data.user.status === 'profile_completed') {
+        showScreen('screen-welcome'); return;
+      }
+      if (data.user.status === 'verification_pending') {
+        showScreen('screen-email-sent'); return;
+      }
+      // Otherwise show status
+      await checkStatus();
+    }
+  } catch (e) {
+    showScreen('screen-welcome');
+  }
+}
+
+// ── Submit profile ────────────────────────────────────────────
+async function submitProfile() {
+  const firstName = document.getElementById('inp-first').value.trim();
+  const lastName  = document.getElementById('inp-last').value.trim();
+  const email     = document.getElementById('inp-email').value.trim();
+  const tauroId   = document.getElementById('inp-tauro').value.trim();
+  const errEl     = document.getElementById('form-error');
+
+  errEl.style.display = 'none';
+
+  if (!email || !tauroId) {
+    errEl.textContent = 'E-Mail und TauroMarkets ID sind erforderlich.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-profile');
+  btn.disabled = true;
+  btn.textContent = 'Sende E-Mail…';
+
+  try {
+    const resp = await fetch(`${API}/api/miniapp/profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({ email, tauro_client_id: tauroId, first_name: firstName, last_name: lastName }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Fehler');
+    showScreen('screen-email-sent');
+  } catch (e) {
+    errEl.textContent = e.message || 'Etwas ist schiefgelaufen. Prüfe deine Daten.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Verifizierungs-E-Mail senden';
+  }
+}
+
+// ── Check status ──────────────────────────────────────────────
+async function checkStatus() {
+  showScreen('screen-status');
+  document.getElementById('status-content').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+
+  try {
+    const resp = await fetch(`${API}/api/miniapp/status`, {
+      headers: { 'Authorization': `Bearer ${userToken}` },
+    });
+    const data = await resp.json();
+    if (!resp.ok) { localStorage.removeItem('phenex_user_token'); window.location.reload(); return; }
+
+    if (data.is_banned) {
+      showScreen('screen-banned'); return;
+    }
+
+    renderStatus(data);
+  } catch (e) {
+    document.getElementById('status-content').innerHTML = `
+      <div class="status-card">
+        <div class="status-msg">Verbindungsfehler. Bitte versuche es erneut.</div>
+        <button class="btn-secondary" onclick="checkStatus()">Erneut versuchen</button>
+      </div>
+    `;
+  }
+}
+
+function renderStatus(data) {
+  const el = document.getElementById('status-content');
+
+  const steps = `
+    <div class="steps" style="margin-bottom:20px;">
+      <div class="step ${data.broker_verified || data.status !== 'registered' ? 'done' : 'active'}"></div>
+      <div class="step ${data.broker_verified ? 'done' : data.status === 'verification_pending' ? 'active' : ''}"></div>
+      <div class="step ${data.vip_member ? 'done' : data.qualified ? 'active' : ''}"></div>
+    </div>
+  `;
+
+  let content = '';
+
+  if (!data.broker_verified) {
+    content = `
+      <div class="status-card">
+        <div class="status-icon">🔗</div>
+        <div class="status-title">Noch nicht verifiziert</div>
+        <div class="status-msg">Fülle zuerst dein Profil aus und bestätige die E-Mail von TauroMarkets.</div>
+      </div>
+      <button class="btn-primary" onclick="showScreen('screen-welcome')">Profil ausfüllen</button>
+    `;
+  } else if (!data.qualified) {
+    content = `
+      <div class="status-card" style="border-color: rgba(245,158,11,0.3);">
+        <div class="status-icon">⏳</div>
+        <div class="status-title">Nicht qualifiziert</div>
+        <div class="status-msg">Für den Phenex VIP Zugang benötigst du ein aktives TauroMarkets Konto mit mindestens 100 USD Guthaben.</div>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Account verifiziert</span>
+        <span class="info-badge badge-green">✓ Ja</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Mindestguthaben (100 USD)</span>
+        <span class="info-badge badge-red">✗ Nicht erfüllt</span>
+      </div>
+      <button class="btn-secondary" onclick="checkStatus()">🔄 Status aktualisieren</button>
+    `;
+  } else if (!data.vip_member) {
+    content = `
+      <div class="status-card" style="border-color: rgba(232,255,71,0.3);">
+        <div class="status-icon">🎉</div>
+        <div class="status-title">Du bist qualifiziert!</div>
+        <div class="status-msg">Klicke unten, um der exklusiven Phenex VIP Gruppe beizutreten.</div>
+      </div>
+      <button class="btn-primary" onclick="joinVIP()" id="btn-join">
+        ⚡ VIP Gruppe beitreten
+      </button>
+    `;
+  } else if (!data.in_group && data.invite_link) {
+    content = `
+      <div class="status-card" style="border-color: rgba(232,255,71,0.3);">
+        <div class="status-icon">⚡</div>
+        <div class="status-title">VIP Zugang aktiv</div>
+        <div class="status-msg">Dein Einladungslink ist bereit. Tritt jetzt der Gruppe bei!</div>
+      </div>
+      <a href="${data.invite_link}" class="btn-primary" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px;">
+        ✈️ Gruppe betreten
+      </a>
+    `;
+  } else {
+    content = `
+      <div class="status-card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="status-icon">✅</div>
+        <div class="status-title">VIP Mitglied</div>
+        <div class="status-msg">Du hast vollen Zugang zur Phenex VIP Community.</div>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Account verifiziert</span>
+        <span class="info-badge badge-green">✓</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">VIP Status</span>
+        <span class="info-badge badge-yellow">⚡ Aktiv</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">In VIP Gruppe</span>
+        <span class="info-badge ${data.in_group ? 'badge-green' : 'badge-gray'}">${data.in_group ? '✓ Ja' : 'Nicht beigetreten'}</span>
+      </div>
+      <button class="btn-secondary" onclick="checkStatus()">🔄 Aktualisieren</button>
+    `;
+  }
+
+  el.innerHTML = steps + content;
+}
+
+async function joinVIP() {
+  const btn = document.getElementById('btn-join');
+  if (btn) { btn.disabled = true; btn.textContent = 'Wird verarbeitet…'; }
+
+  try {
+    const resp = await fetch(`${API}/api/miniapp/vip/join`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${userToken}` },
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.message || data.error);
+    if (data.invite_link) {
+      window.open(data.invite_link, '_blank');
+    }
+    await checkStatus();
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ VIP Gruppe beitreten'; }
+    // Show specific error message
+    const statusEl = document.querySelector('#status-content .status-msg');
+    if (statusEl) statusEl.textContent = e.message;
+  }
+}
+
+function openSupport() {
+  if (tg) tg.openTelegramLink('https://t.me/PhenexSupport');
+  else window.open('https://t.me/PhenexSupport', '_blank');
+}
+
+// ── Screen routing ────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
